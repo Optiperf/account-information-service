@@ -1,0 +1,86 @@
+services:
+  postgres_db:
+    image: postgres:13 # Or your preferred version
+    container_name: ais_postgres_db
+    mem_limit: 1024m
+    cpus: '1.0' # Limit this service to use at most one CPU core
+    ports:
+      - "5432:5432" # Exposes PostgreSQL to your host machine (optional, for direct access)
+    environment:
+      POSTGRES_DB: ais_postgres_db        # Name of the database to create
+      POSTGRES_USER: localuser        # Username for the database
+      POSTGRES_PASSWORD: localpassword  # Password for the database
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Persists data across container restarts
+    networks:
+      - ais_network
+  # Define a network for the services to communicate
+  account-details-service:
+    container_name: ais_account_details_service
+    build: microservices/account-details-service
+    mem_limit: 512m
+    cpus: '1.0' # Limit this service to use at most one CPU core
+    ports:
+      - "8082:8082"
+      - "8083:8083"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      # Pass database connection details as environment variables
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_db:5432/ais_postgres_db
+      SPRING_DATASOURCE_USERNAME: localuser
+      SPRING_DATASOURCE_PASSWORD: localpassword
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update # Or 'validate'/'none' for production
+    depends_on:
+      - postgres_db # Ensures PostgreSQL starts before this service
+    networks:
+      - ais_network
+
+  account-address-service:
+    container_name: ais_account_address_service
+    build: microservices/account-address-service
+    mem_limit: 512m
+    cpus: '1.0' # Limit this service to use at most one CPU core
+    ports:
+      - "8084:8084"
+      - "8085:8085"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      # Pass database connection details as environment variables
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_db:5432/ais_postgres_db
+      SPRING_DATASOURCE_USERNAME: localuser
+      SPRING_DATASOURCE_PASSWORD: localpassword
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update # Or 'validate'/'none' for production
+    depends_on:
+      - postgres_db # Ensures PostgreSQL starts before this service
+    networks:
+      - ais_network
+
+  account-balance-service:
+    container_name: ais_account_balance_service
+    build: microservices/account-balance-service
+    mem_limit: 512m
+    cpus: '1.0' # Limit this service to use at most one CPU core
+    ports:
+      - "8086:8086"
+      - "8087:8087"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      # Pass database connection details as environment variables
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_db:5432/ais_postgres_db
+      SPRING_DATASOURCE_USERNAME: localuser
+      SPRING_DATASOURCE_PASSWORD: localpassword
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update # Or 'validate'/'none' for production
+    depends_on:
+      - postgres_db # Ensures PostgreSQL starts before this service
+    networks:
+      - ais_network
+
+volumes:
+  postgres_data: # Named volume to persist PostgreSQL data
+networks:
+  ais_network:
+    driver: bridge # Default network driver, can be customized if needed
+    # Optionally specify additional network settings here
+  # You can add more services here as needed, following the same pattern
+  # Ensure that each service has its own build context and Dockerfile if needed
+  # This allows for easy scaling and management of the microservices architecture 

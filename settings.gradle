@@ -1,0 +1,3 @@
+include ':microservices:account-details-service'
+include ':microservices:account-address-service'
+include ':microservices:account-balance-service'

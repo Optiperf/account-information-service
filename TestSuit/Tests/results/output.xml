@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 7.3 (Python 3.8.10 on linux)" generated="2025-06-06T22:58:38.698182" rpa="false" schemaversion="5">
+<suite id="s1" name="Test Account Details" source="/home/user/Account-Information-Service/TestSuit/Tests/Test_Account_Details.robot">
+<test id="s1-t1" name="Verify GET API Response" line="10">
+<kw name="Create API Session account_details" owner="api_keywords">
+<kw name="Create Session" owner="RequestsLibrary">
+<msg time="2025-06-06T22:58:38.765300" level="INFO">Creating Session using : alias=account_details, url=http://localhost:8082, headers={'Content-Type': 'application/json'},                     cookies={}, auth=None, timeout=None, proxies=None, verify=False,                     debug=0 </msg>
+<arg>account_details</arg>
+<arg>${BASE_URL_DETAILS}</arg>
+<arg>headers={"Content-Type": "application/json"}</arg>
+<doc>Create Session: create a HTTP session to a server</doc>
+<status status="PASS" start="2025-06-06T22:58:38.765058" elapsed="0.000390"/>
+</kw>
+<status status="PASS" start="2025-06-06T22:58:38.764623" elapsed="0.000890"/>
+</kw>
+<kw name="Call API" owner="api_keywords">
+<kw name="Run Keyword" owner="BuiltIn">
+<kw name="GET On Session" owner="RequestsLibrary">
+<msg time="2025-06-06T22:58:38.782494" level="INFO">GET Request : url=http://localhost:8082/account-details/520020015 
+ path_url=/account-details/520020015 
+ headers={'User-Agent': 'python-requests/2.22.0', 'Accept-Encoding': 'gzip, deflate', 'Accept': '*/*', 'Connection': 'keep-alive', 'Content-Type': 'application/json', 'Content-Length': '6'} 
+ body=b'"None"' 
+ </msg>
+<msg time="2025-06-06T22:58:38.782766" level="INFO">GET Response : url=http://localhost:8082/account-details/520020015 
+ status=200, reason=OK 
+ headers={'Content-Type': 'application/json', 'Content-Length': '169'} 
+ body={"accountNumber":520020015,"accountName":"account-name-520020015","accountType":"SAVINGS","currency":"USD","status":"ACTIVE","createdDate":"2025-06-02T13:41:07.089456Z"} 
+ </msg>
+<arg>${session_alias}</arg>
+<arg>${endpoint}</arg>
+<arg>json=${data}</arg>
+<doc>Sends a GET request on a previously created HTTP Session.</doc>
+<status status="PASS" start="2025-06-06T22:58:38.766330" elapsed="0.016535"/>
+</kw>
+<msg time="2025-06-06T22:58:38.783156" level="INFO">${response} = &lt;Response [200]&gt;</msg>
+<var>${response}</var>
+<arg>${method} On Session</arg>
+<arg>${session_alias}</arg>
+<arg>${endpoint}</arg>
+<arg>json=${data}</arg>
+<doc>Executes the given keyword with the given arguments.</doc>
+<status status="PASS" start="2025-06-06T22:58:38.766066" elapsed="0.017145"/>
+</kw>
+<return>
+<value>${response}</value>
+<status status="PASS" start="2025-06-06T22:58:38.783360" elapsed="0.000112"/>
+</return>
+<msg time="2025-06-06T22:58:38.783723" level="INFO">${response} = &lt;Response [200]&gt;</msg>
+<var>${response}</var>
+<arg>account_details</arg>
+<arg>GET</arg>
+<arg>/account-details/${VALID_ACCOUNT_NUMBER}</arg>
+<status status="PASS" start="2025-06-06T22:58:38.765734" elapsed="0.018018"/>
+</kw>
+<kw name="Validate API Response" owner="api_keywords">
+<kw name="Should Be Equal As Strings" owner="BuiltIn">
+<msg time="2025-06-06T22:58:38.784900" level="INFO">Argument types are:
+&lt;class 'int'&gt;
+&lt;class 'str'&gt;</msg>
+<arg>${response.status_code}</arg>
+<arg>${expected_status}</arg>
+<doc>Fails if objects are unequal after converting them to strings.</doc>
+<status status="PASS" start="2025-06-06T22:58:38.784473" elapsed="0.000474"/>
+</kw>
+<arg>${response}</arg>
+<arg>200</arg>
+<status status="PASS" start="2025-06-06T22:58:38.784064" elapsed="0.000930"/>
+</kw>
+<status status="PASS" start="2025-06-06T22:58:38.764079" elapsed="0.021080"/>
+</test>
+<status status="PASS" start="2025-06-06T22:58:38.698887" elapsed="0.086837"/>
+</suite>
+<statistics>
+<total>
+<stat pass="1" fail="0" skip="0">All Tests</stat>
+</total>
+<tag>
+</tag>
+<suite>
+<stat name="Test Account Details" id="s1" pass="1" fail="0" skip="0">Test Account Details</stat>
+</suite>
+</statistics>
+<errors>
+</errors>
+</robot>
