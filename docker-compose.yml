@@ -84,3 +84,4 @@ networks:
   # You can add more services here as needed, following the same pattern
   # Ensure that each service has its own build context and Dockerfile if needed
   # This allows for easy scaling and management of the microservices architecture 
+  # For checking the staging and un staging of Git
