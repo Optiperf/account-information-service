@@ -1,0 +1,13 @@
+# Git
+.git
+.gitignore
+
+# Maven
+target/
+
+# IDE files
+.idea/
+*.iml
+
+# Log files
+*.log

@@ -1,3 +1,4 @@
 include ':microservices:account-details-service'
 include ':microservices:account-address-service'
 include ':microservices:account-balance-service'
+include ':microservices:ais-composite-service'

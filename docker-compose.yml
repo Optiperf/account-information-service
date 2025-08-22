@@ -75,6 +75,20 @@ services:
     networks:
       - ais_network
 
+  ais-composite-service:
+    container_name: ais_composite_service
+    build: microservices/ais-composite-service
+    mem_limit: 512m
+    cpus: '1.0' # Limit this service to use at most one CPU core
+    ports:
+      - "8088:8088"
+      - "8089:8089"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      # Add environment variables to point to other services if needed
+    networks:
+      - ais_network
+
 volumes:
   postgres_data: # Named volume to persist PostgreSQL data
 networks:
