@@ -83,4 +83,5 @@ networks:
     # Optionally specify additional network settings here
   # You can add more services here as needed, following the same pattern
   # Ensure that each service has its own build context and Dockerfile if needed
-  # This allows for easy scaling and management of the microservices architecture 
+  # This allows for easy scaling and management of the microservices architecture
+  # Change to be made in the docker-compose.yml file
