@@ -5,10 +5,10 @@ spring init \
 --type=gradle-project \
 --java-version=17 \
 --packaging=jar \
---name=account-address-service \
---package-name=nl.optiperf.microservices.core.address \
---groupId=nl.optiperf.microservices.core.address \
+--name=ais-composite-service \
+--package-name=nl.optiperf.microservices.composite.ais \
+--groupId=nl.optiperf.microservices.composite.ais \
 --dependencies=actuator,webflux \
 --version=1.0.0-SNAPSHOT \
-account-address-service
+ais-composite-service
 cd ..
