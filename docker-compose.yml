@@ -1,4 +1,21 @@
 services:
+  kong:
+    image: kong:3.6
+    container_name: kong_gateway
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /kong.yml
+      KONG_PROXY_LISTEN: "0.0.0.0:8000"
+      KONG_ADMIN_LISTEN: "0.0.0.0:8001"
+    volumes:
+      - ./kong.yml:/kong.yml
+    command: kong start --conf /kong.yml
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+    networks:
+      - ais_network
+
   postgres_db:
     image: postgres:13 # Or your preferred version
     container_name: ais_postgres_db
@@ -91,6 +108,7 @@ services:
 
 volumes:
   postgres_data: # Named volume to persist PostgreSQL data
+  kong_data: # Named volume to persist Kong database data
 networks:
   ais_network:
     driver: bridge # Default network driver, can be customized if needed

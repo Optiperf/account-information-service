@@ -4,7 +4,7 @@ account_types = ['SAVINGS', 'LOAN', 'CHECKING', 'CREDIT']
 currencies = ['USD', 'EUR', 'GBP', 'JPY', 'AUD']
 
 with open("data.sql", "w") as f:
-    for acc_num in range(520010001, 520020001):
+    for acc_num in range(521020001, 521030001):
         acc_name = f"account-name-{acc_num}"
         acc_type = random.choice(account_types)
         currency = random.choice(currencies)
