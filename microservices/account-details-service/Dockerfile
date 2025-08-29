@@ -1,5 +1,5 @@
 FROM eclipse-temurin:17.0.5_8-jre-focal
 WORKDIR /app
 COPY build/libs/*.jar app.jar
-EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+EXPOSE 8082 8083
+ENTRYPOINT ["java", "-Dserver.port=8082", "-Dmanagement.server.port=8083", "-Djavax.net.ssl.keyStore=keystore.p12",  "-jar", "app.jar"]

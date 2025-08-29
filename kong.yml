@@ -1,7 +1,7 @@
 _format_version: "3.0"
 services:
   - name: account-details-service
-    url: http://account-details-service:8082
+    url: https://account-details-service:8082
     #tls_verify: false  # Disable SSL verification for self-signed certs
     routes:
       - name: details
@@ -11,7 +11,7 @@ services:
           - ~/account-details(|/.*)
         strip_path: false
         protocols:
-          - http
+          - https
         methods:
           - GET
           - POST
@@ -19,7 +19,7 @@ services:
           - DELETE
 
   - name: account-address-service
-    url: http://account-address-service:8084
+    url: https://account-address-service:8084
     #tls_verify: false  # Disable SSL verification for self-signed certs
     routes:
       - name: address
@@ -29,7 +29,7 @@ services:
           - ~/account-address(|/.*)
         strip_path: false
         protocols:
-          - http
+          - https
         methods:
           - GET
           - POST
@@ -37,7 +37,7 @@ services:
           - DELETE
 
   - name: account-balance-service
-    url: http://account-balance-service:8086
+    url: https://account-balance-service:8086
     #tls_verify: false  # Disable SSL verification for self-signed certs
     routes:
       - name: balance
@@ -47,7 +47,7 @@ services:
           - ~/account-balance(|/.*)
         strip_path: false
         protocols:
-          - http
+          - https
         methods:
           - GET
           - POST
@@ -55,8 +55,8 @@ services:
           - DELETE
 
   - name: ais-composite-service
-    url: http://ais-composite-service:8088
-    #tls_verify: false  # Disable SSL verification for self-signed certs
+    url: https://ais-composite-service:8088
+    tls_verify: false  # Disable SSL verification for self-signed certs
     routes:
       - name: composite
         hosts:
@@ -65,7 +65,7 @@ services:
           - ~/ais-composite(|/.*)
         strip_path: false
         protocols:
-          - http
+          - https
         methods:
           - GET
           - POST
