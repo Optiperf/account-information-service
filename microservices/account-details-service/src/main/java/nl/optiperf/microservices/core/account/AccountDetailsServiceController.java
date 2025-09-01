@@ -2,12 +2,17 @@ package nl.optiperf.microservices.core.account;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import nl.optiperf.microservices.core.account.model.AccountDetails;
 import nl.optiperf.microservices.core.account.repository.AccountDetailsRepository;
 import java.util.Map;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
+import java.util.List;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 @RestController
 @RequestMapping("/account-details")
@@ -18,6 +23,23 @@ public class AccountDetailsServiceController {
     public AccountDetailsServiceController(AccountDetailsRepository accountDetailsRepository) {
         this.accountDetailsRepository = accountDetailsRepository;
     }
+
+    // 🔍 New filtering + pagination endpoint
+    @GetMapping
+    public ResponseEntity<List<AccountDetails>> getFilteredAccounts(
+        @RequestParam(required = false) String status,
+        @RequestParam(required = false) AccountDetails.AccountType accountType,
+        @RequestParam(required = false) String currency,
+        @RequestParam(required = false) OffsetDateTime createdAfter,
+        @RequestParam(required = false) OffsetDateTime createdBefore,
+        @RequestParam(defaultValue = "0") int offset,
+        @RequestParam(defaultValue = "20") int limit
+    ) {
+        Pageable pageable = PageRequest.of(offset / limit, limit, Sort.by("createdDate").descending());
+        List<AccountDetails> results = accountDetailsRepository.findFiltered(status, accountType, currency, createdAfter, createdBefore, pageable);
+        return ResponseEntity.ok(results);
+    }
+
     @GetMapping("/{accountNumber}")
     public ResponseEntity<AccountDetails> getAccountDetails(@PathVariable Integer accountNumber) {
         return accountDetailsRepository.findById(accountNumber)

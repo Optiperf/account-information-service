@@ -1,7 +1,9 @@
 package nl.optiperf.microservices.core.balance;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
+//import org.checkerframework.checker.units.qual.min;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import nl.optiperf.microservices.core.balance.model.AccountBalance;
@@ -11,7 +13,11 @@ import nl.optiperf.microservices.core.balance.model.UpdateBalanceRequestDTO;
 import nl.optiperf.microservices.core.balance.repository.AccountBalanceRepository;
 import java.util.Optional;
 import java.util.Map;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
+import java.util.List;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 @RestController
 @RequestMapping("/account-balance")
@@ -21,6 +27,36 @@ public class AccountBalanceServiceController {
     @Autowired
     public AccountBalanceServiceController(AccountBalanceRepository accountBalanceRepository) {
         this.accountBalanceRepository = accountBalanceRepository;
+    }
+    @GetMapping
+    public ResponseEntity<List<AccountBalance>> getFilteredBalances(
+        @RequestParam(required = false) String status,
+        @RequestParam(required = false) String accountType,
+        @RequestParam(required = false) String currency,
+        @RequestParam(required = false) Double minCurrentBalance,
+        @RequestParam(required = false) Double maxCurrentBalance,
+        @RequestParam(required = false) Double minAvailableBalance,
+        @RequestParam(required = false) Double maxAvailableBalance,
+        @RequestParam(required = false) OffsetDateTime createdAfter,
+        @RequestParam(required = false) OffsetDateTime createdBefore,
+        @RequestParam(defaultValue = "0") int offset,
+        @RequestParam(defaultValue = "20") int limit
+    ) {
+        Pageable pageable = PageRequest.of(offset / limit, limit, Sort.by("lastTransactionDate").descending());
+        // Provide null/default values for missing parameters to match the method signature
+        List<AccountBalance> results = accountBalanceRepository.findFiltered(
+            status, 
+            accountType, 
+            currency, // third String parameter
+            minCurrentBalance, // Double parameter 1
+            maxAvailableBalance, // Double parameter 2
+            maxAvailableBalance, // Double parameter 3
+            minAvailableBalance, // Double parameter 4
+            createdAfter, 
+            createdBefore, 
+            pageable
+        );
+        return ResponseEntity.ok(results);
     }
     @GetMapping("/{accountNumber}")
     public ResponseEntity<AccountBalance> getAccountBalance(@PathVariable Integer accountNumber) {

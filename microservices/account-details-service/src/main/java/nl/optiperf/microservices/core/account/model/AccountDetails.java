@@ -35,12 +35,34 @@ public class AccountDetails {
     private OffsetDateTime createdDate;
 
     public enum AccountType {
-    SAVINGS,
-    CHECKING,
-    CREDIT,
-    LOAN;
-    // You can add additional methods or properties if needed
-}
+        SAVINGS,             // Standard interest-bearing deposit account
+        CHECKING,            // Transactional account for daily use
+        LOAN,                // Account tied to borrowed funds (personal, auto, etc.)
+        CREDIT,              // Credit card or revolving credit account
+        FIXED_DEPOSIT,       // Time-bound deposit with fixed interest
+        RECURRING_DEPOSIT,   // Monthly deposit account with fixed tenure
+        MORTGAGE,            // Home loan account
+        OVERDRAFT,           // Linked to checking, allows negative balance
+        INVESTMENT,          // Brokerage or mutual fund account
+        RETIREMENT,          // Pension or retirement savings (e.g. IRA, 401k equivalent)
+        NRI,                 // Non-resident Indian account (specific to Indian banks)
+        ESCROW,              // Third-party holding account for transactions
+        JOINT,               // Shared ownership between two or more individuals
+        BUSINESS,            // Corporate or SME account
+        CURRENT,             // Non-interest-bearing business account (common in EU/Asia)
+        SALARY,              // Employer-linked payroll account
+        STUDENT,             // Special account for students with limited features
+        PREPAID,             // Reloadable card-linked account
+        TRUST,               // Managed by trustee for beneficiary
+        CHARITY,             // Non-profit or donation-linked account
+        FOREX,               // Foreign currency account
+        CRYPTO,              // Digital asset wallet or linked account
+        DEMAT,               // Securities account for holding shares electronically
+        TAX,                 // Account for tax payments or refunds
+        SUBSCRIPTION,        // Linked to recurring service payments
+        VIRTUAL,             // Non-physical account used for internal routing
+        SAFEKEEPING          // Custodial account for valuables or documents
+    }
     // Constructors, Getters, Setters, equals, hashCode, toString
 
         public AccountDetails() {
