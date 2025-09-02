@@ -1,0 +1,43 @@
+type Query {
+  account(accountNumber: ID!): Account
+  accounts(filter: AccountFilter, pagination: Pagination): [Account]
+  accountsByIds(accountNumbers: [ID!]!): [Account]
+}
+type Account {
+  accountNumber: ID!
+  accountName: String
+  accountType: String
+  currency: String
+  status: String
+  createdDate: String
+  balance: Balance
+  address: Address
+}
+type Balance {
+  currency: String
+  currentBalance: Float
+  availableBalance: Float
+  lastTransactionDate: String
+}
+type Address {
+  street: String
+  houseNumber: String
+  city: String
+  state: String
+  postalCode: String
+  country: String
+  contactDetails: ContactDetails
+}
+type ContactDetails {
+  phone: String
+  email: String
+}
+input AccountFilter {
+  accountType: String
+  status: String
+  currency: String
+}
+input Pagination {
+  limit: Int
+  offset: Int
+}

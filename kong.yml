@@ -1,73 +1,135 @@
 _format_version: "3.0"
+
+consumers:
+  - username: ais-user
+    custom_id: ais-user-id
+    jwt_secrets:
+      - key: "ais-jwt-public-key-63bb70ae"
+        secret: "00fcf3f5d290c1d0a4c56b30705b2f125d1cc51195032f317947fb418e5d948a"
+        algorithm: HS256
+
 services:
   - name: account-details-service
-    url: https://account-details-service:8082
+    url: http://account-details-service:8082
     #tls_verify: false  # Disable SSL verification for self-signed certs
     routes:
       - name: details
         hosts:
           - localhost
+          - kong-gateway
+          - kong
+
         paths:
           - ~/account-details(|/.*)
         strip_path: false
         protocols:
+          - http
           - https
         methods:
           - GET
           - POST
           - PUT
           - DELETE
+    plugins:
+      - name: rate-limiting
+        config:
+          second: 20
+          policy: local
+      - name: jwt
+        config:
+          key_claim_name: iss
+          secret_is_base64: false
+          run_on_preflight: true
 
   - name: account-address-service
-    url: https://account-address-service:8084
+    url: http://account-address-service:8084
     #tls_verify: false  # Disable SSL verification for self-signed certs
     routes:
       - name: address
         hosts:
           - localhost
+          - kong-gateway
+          - kong
         paths:
           - ~/account-address(|/.*)
         strip_path: false
         protocols:
+          - http
           - https
         methods:
           - GET
           - POST
           - PUT
           - DELETE
+    plugins:
+      - name: rate-limiting
+        config:
+          second: 20
+          policy: local
+      - name: jwt
+        config:
+          key_claim_name: iss
+          secret_is_base64: false
+          run_on_preflight: true
 
   - name: account-balance-service
-    url: https://account-balance-service:8086
+    url: http://account-balance-service:8086
     #tls_verify: false  # Disable SSL verification for self-signed certs
     routes:
       - name: balance
         hosts:
           - localhost
+          - kong-gateway
+          - kong
         paths:
           - ~/account-balance(|/.*)
         strip_path: false
         protocols:
+          - http
           - https
         methods:
           - GET
           - POST
           - PUT
           - DELETE
+    plugins:
+      - name: rate-limiting
+        config:
+          second: 100
+          policy: local
+      - name: jwt
+        config:
+          key_claim_name: iss
+          secret_is_base64: false
+          run_on_preflight: true
 
   - name: ais-composite-service
-    url: https://ais-composite-service:8088
-    tls_verify: false  # Disable SSL verification for self-signed certs
+    url: http://ais-composite-service:8088
+    #tls_verify: false  # Disable SSL verification for self-signed certs
     routes:
       - name: composite
         hosts:
           - localhost
+          - kong-gateway
+          - kong
         paths:
-          - ~/ais-composite(|/.*)
+          - ~/graphql(|/.*)
         strip_path: false
         protocols:
+          - http
           - https
         methods:
           - GET
           - POST
           - PUT
           - DELETE
+    plugins:
+      - name: rate-limiting
+        config:
+          second: 200
+          policy: local
+      - name: jwt
+        config:
+          key_claim_name: iss
+          secret_is_base64: false
+          run_on_preflight: true

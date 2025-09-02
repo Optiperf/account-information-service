@@ -5,7 +5,7 @@ services:
     environment:
       KONG_DATABASE: "off"
       KONG_DECLARATIVE_CONFIG: /kong.yml
-      KONG_PROXY_LISTEN: "0.0.0.0:8000 ssl"
+      KONG_PROXY_LISTEN: "0.0.0.0:8000, 0.0.0.0:8443 ssl"
       KONG_ADMIN_LISTEN: "0.0.0.0:8001"
       KONG_SSL_CERT: "/kong/server.crt"
       KONG_SSL_CERT_KEY: "/kong/server.key"
@@ -14,7 +14,7 @@ services:
       - ./server.crt:/kong/server.crt
       - ./server.key:/kong/server.key
     ports:
-      - "8000:8000"
+      - "8443:8443"    # External HTTPS for clients
       - "8001:8001"
     networks:
       - ais_network
@@ -49,14 +49,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_db:5432/ais_postgres_db
       SPRING_DATASOURCE_USERNAME: localuser
       SPRING_DATASOURCE_PASSWORD: localpassword
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update # Or 'validate'/'none' for production
-      SERVER_SSL_KEY_STORE: "/etc/ssl/keystore.p12"
-      SERVER_SSL_KEY_STORE_PASSWORD: "changeit"
-      SERVER_SSL_KEY_STORE_TYPE: "PKCS12"
-      # Add environment variables to point to other services if needed
-    volumes:
-      - ./keystore.p12:/etc/ssl/keystore.p12
-      - ./ca.pem:/etc/ssl/ca.pem
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
     depends_on:
       - postgres_db # Ensures PostgreSQL starts before this service
     networks:
@@ -76,14 +69,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_db:5432/ais_postgres_db
       SPRING_DATASOURCE_USERNAME: localuser
       SPRING_DATASOURCE_PASSWORD: localpassword
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update # Or 'validate'/'none' for production
-      SERVER_SSL_KEY_STORE: "/etc/ssl/keystore.p12"
-      SERVER_SSL_KEY_STORE_PASSWORD: "changeit"
-      SERVER_SSL_KEY_STORE_TYPE: "PKCS12"
-      # Add environment variables to point to other services if needed
-    volumes:
-      - ./keystore.p12:/etc/ssl/keystore.p12
-      - ./ca.pem:/etc/ssl/ca.pem
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
     depends_on:
       - postgres_db # Ensures PostgreSQL starts before this service
     networks:
@@ -103,14 +89,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_db:5432/ais_postgres_db
       SPRING_DATASOURCE_USERNAME: localuser
       SPRING_DATASOURCE_PASSWORD: localpassword
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update # Or 'validate'/'none' for production
-      SERVER_SSL_KEY_STORE: "/etc/ssl/keystore.p12"
-      SERVER_SSL_KEY_STORE_PASSWORD: "changeit"
-      SERVER_SSL_KEY_STORE_TYPE: "PKCS12"
-      # Add environment variables to point to other services if needed
-    volumes:
-      - ./keystore.p12:/etc/ssl/keystore.p12
-      - ./ca.pem:/etc/ssl/ca.pem
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
     depends_on:
       - postgres_db # Ensures PostgreSQL starts before this service
     networks:
@@ -126,13 +105,6 @@ services:
       - "8089:8089"
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SERVER_SSL_KEY_STORE: "/etc/ssl/keystore.p12"
-      SERVER_SSL_KEY_STORE_PASSWORD: "changeit"
-      SERVER_SSL_KEY_STORE_TYPE: "PKCS12"
-      # Add environment variables to point to other services if needed
-    volumes:
-      - ./keystore.p12:/etc/ssl/keystore.p12
-      - ./ca.pem:/etc/ssl/ca.pem
     networks:
       - ais_network
 
