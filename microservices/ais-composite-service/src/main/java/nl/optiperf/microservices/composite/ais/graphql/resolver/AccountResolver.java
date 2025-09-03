@@ -5,11 +5,11 @@ import nl.optiperf.microservices.composite.ais.graphql.client.BalanceDetailsClie
 import nl.optiperf.microservices.composite.ais.graphql.dto.AccountDetails;
 import nl.optiperf.microservices.composite.ais.graphql.dto.AddressDetails;
 import nl.optiperf.microservices.composite.ais.graphql.dto.BalanceDetails;
-import nl.optiperf.microservices.composite.ais.graphql.dto.ContactDetails;
+import org.springframework.graphql.data.method.annotation.ContextValue;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestHeader;
 import reactor.core.publisher.Mono;
+import java.util.Optional;
 
 @Controller
 public class AccountResolver {
@@ -23,13 +23,13 @@ public class AccountResolver {
     }
 
     @SchemaMapping
-    public Mono<BalanceDetails> balance(AccountDetails accountDetails, @RequestHeader(value = "Authorization", required = false) String authorizationHeader) {
-        return balanceDetailsClient.getBalanceDetails(accountDetails.accountNumber(), authorizationHeader);
+    public Mono<BalanceDetails> balance(AccountDetails accountDetails, @ContextValue Optional<String> authorizationHeader) {
+        return balanceDetailsClient.getBalanceDetails(accountDetails.accountNumber(), authorizationHeader.orElse(null));
     }
 
     @SchemaMapping
-    public Mono<AddressDetails> address(AccountDetails accountDetails, @RequestHeader(value = "Authorization", required = false) String authorizationHeader) {
-        return addressDetailsClient.getAddressDetails(accountDetails.accountNumber(), authorizationHeader);
+    public Mono<AddressDetails> address(AccountDetails accountDetails, @ContextValue Optional<String> authorizationHeader) {
+        return addressDetailsClient.getAddressDetails(accountDetails.accountNumber(), authorizationHeader.orElse(null));
     }
 
 }

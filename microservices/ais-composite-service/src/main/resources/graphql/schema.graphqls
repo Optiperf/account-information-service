@@ -1,8 +1,6 @@
 type Query {
     account(accountNumber: ID!): AccountDetails
-    accountsByIds(accountNumbers: [ID!]!): [AccountDetails]
-    balance(accountNumber: ID!): BalanceDetails
-    address(accountNumber: ID!): AddressDetails
+    accounts(accountNumbers: [ID!]!): [AccountDetails]
 }
 
 type AccountDetails {
