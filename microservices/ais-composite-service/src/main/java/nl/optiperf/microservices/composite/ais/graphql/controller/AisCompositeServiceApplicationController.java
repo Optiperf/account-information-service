@@ -14,9 +14,4 @@ public class AisCompositeServiceApplicationController {
     public AisCompositeServiceApplicationController(AccountDetailsClient accountDetailsClient) {
         this.accountDetailsClient = accountDetailsClient;
     }
-
-   /* @QueryMapping
-    public Mono<AccountDetails> account(Long accountNumber) {
-        return accountDetailsClient.getAccountDetails(accountNumber);
-    } */
 }

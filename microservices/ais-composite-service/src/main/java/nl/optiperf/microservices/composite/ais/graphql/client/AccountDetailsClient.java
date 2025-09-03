@@ -1,5 +1,6 @@
 package nl.optiperf.microservices.composite.ais.graphql.client;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -9,8 +10,11 @@ import nl.optiperf.microservices.composite.ais.graphql.dto.AccountDetails;
 public class AccountDetailsClient {
     private final WebClient webClient;
 
-    public AccountDetailsClient(WebClient.Builder builder) {
-        this.webClient = builder.baseUrl("http://kong:8000").build();
+    public AccountDetailsClient(
+            WebClient.Builder builder,
+            @Value("${service.url.account-details}") String accountDetailsServiceUrl
+    ) {
+        this.webClient = builder.baseUrl(accountDetailsServiceUrl).build();
     }
 
     public Mono<AccountDetails> getAccountDetails(Long accountNumber, String authorizationHeader) {
