@@ -33,7 +33,7 @@ services:
     plugins:
       - name: rate-limiting
         config:
-          second: 20
+          second: 200
           policy: local
       - name: jwt
         config:
@@ -64,7 +64,7 @@ services:
     plugins:
       - name: rate-limiting
         config:
-          second: 20
+          second: 200
           policy: local
       - name: jwt
         config:
@@ -95,7 +95,7 @@ services:
     plugins:
       - name: rate-limiting
         config:
-          second: 100
+          second: 200
           policy: local
       - name: jwt
         config:
@@ -126,7 +126,7 @@ services:
     plugins:
       - name: rate-limiting
         config:
-          second: 200
+          second: 20
           policy: local
       - name: jwt
         config:

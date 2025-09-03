@@ -22,6 +22,10 @@ public class AccountQueryResolver {
 
     @QueryMapping
     public Flux<AccountDetails> accounts(@Argument List<Long> accountNumbers, @ContextValue Optional<String> authorizationHeader) {
+        if (accountNumbers == null || accountNumbers.isEmpty()) {
+            return Flux.empty();
+        }
+
         return Flux.fromIterable(accountNumbers)
             .flatMap(accountNumber ->
                 accountDetailsClient.getAccountDetails(
