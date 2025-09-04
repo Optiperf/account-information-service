@@ -1,5 +1,5 @@
 type Query {
-    account(accountNumber: ID!): AccountDetails
+    
     accounts(accountNumbers: [ID!]!): [AccountDetails]
 }
 

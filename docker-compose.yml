@@ -2,6 +2,8 @@ services:
   kong:
     image: kong:3.6
     container_name: kong_gateway
+    #mem_limit: 512m
+    #cpus: '1.0' # Limit this service to use at most one CPU core
     environment:
       KONG_DATABASE: "off"
       KONG_DECLARATIVE_CONFIG: /kong.yml
