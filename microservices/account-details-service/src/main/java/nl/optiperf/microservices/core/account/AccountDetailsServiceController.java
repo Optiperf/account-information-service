@@ -110,5 +110,14 @@ public class AccountDetailsServiceController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/exists")
+    public ResponseEntity<Map<String, Object>> accountExistsById(@RequestParam("accountId") String accountId) {
+        boolean exists = accountDetailsRepository.existsById(Integer.parseInt(accountId));
+        Map<String, Object> response = new HashMap<>();
+        response.put("accountId", accountId);
+        response.put("exists", exists);
+        return ResponseEntity.ok(response);
+    }
+
   
 }

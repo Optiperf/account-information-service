@@ -6,22 +6,20 @@ import java.math.BigDecimal;
 import java.util.Map;
 
 public record BalanceDetails(
-    String currency,
     BigDecimal currentBalance,
     BigDecimal availableBalance,
     String lastTransactionDate
 ) {
     /**
-     * Custom constructor to handle the nested "balance" object in the JSON response
+     * Custom constructor to handle the nested "balanceDetails" object in the JSON response
      * from the account-balance-service.
      */
     @JsonCreator
-    public BalanceDetails(@JsonProperty("balance") Map<String, Object> balance) {
+    public BalanceDetails(@JsonProperty("balanceDetails") Map<String, Object> balanceDetails) {
         this(
-            (String) balance.get("currency"),
-            new BigDecimal(balance.get("currentBalance").toString()),
-            new BigDecimal(balance.get("availableBalance").toString()),
-            (String) balance.get("lastTransactionDate")
+            balanceDetails != null ? new BigDecimal(balanceDetails.get("currentBalance").toString()) : null,
+            balanceDetails != null ? new BigDecimal(balanceDetails.get("availableBalance").toString()) : null,
+            balanceDetails != null ? (String) balanceDetails.get("lastTransactionDate") : null
         );
     }
 }
