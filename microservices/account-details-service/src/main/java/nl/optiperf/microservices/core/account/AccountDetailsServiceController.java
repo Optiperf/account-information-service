@@ -7,21 +7,34 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import nl.optiperf.microservices.core.account.model.AccountDetails;
 import nl.optiperf.microservices.core.account.repository.AccountDetailsRepository;
+import nl.optiperf.microservices.core.account.model.BalanceDetails;
+import nl.optiperf.microservices.core.account.model.Address;
+import nl.optiperf.microservices.core.account.repository.BalanceDetailsRepository;
+import nl.optiperf.microservices.core.account.repository.AddressRepository;
 import java.util.Map;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import java.math.BigDecimal;
+import org.springframework.transaction.annotation.Transactional;
 
 @RestController
 @RequestMapping("/account-details")
 public class AccountDetailsServiceController {
 
-    private AccountDetailsRepository accountDetailsRepository;
+    private final AccountDetailsRepository accountDetailsRepository;
+    private final BalanceDetailsRepository balanceDetailsRepository;
+    private final AddressRepository addressRepository;
+
     @Autowired
-    public AccountDetailsServiceController(AccountDetailsRepository accountDetailsRepository) {
+    public AccountDetailsServiceController(AccountDetailsRepository accountDetailsRepository,
+                                           BalanceDetailsRepository balanceDetailsRepository,
+                                           AddressRepository addressRepository) {
         this.accountDetailsRepository = accountDetailsRepository;
+        this.balanceDetailsRepository = balanceDetailsRepository;
+        this.addressRepository = addressRepository;
     }
 
     // 🔍 New filtering + pagination endpoint
@@ -47,7 +60,8 @@ public class AccountDetailsServiceController {
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
     @PostMapping("/{accountNumber}")
-    public ResponseEntity<?> createAccountDetails(@PathVariable Integer accountNumber, @Valid @RequestBody AccountDetails accountDetails) {
+    @Transactional
+    public ResponseEntity<?> createAccountDetails(@PathVariable Integer accountNumber, @RequestBody Map<String, Object> payload) {
         if (accountDetailsRepository.existsById(accountNumber)) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("message", "Account creation failed");
@@ -55,60 +69,76 @@ public class AccountDetailsServiceController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
         }
 
-        // Check 1: Account number in body must match account number in URL
-        if (accountDetails.getAccountNumber() == null) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("message", "Account creation failed");
-            errorResponse.put("detail", "Account number must be provided in the request body.");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-        }
-        if (!accountNumber.equals(accountDetails.getAccountNumber())) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("message", "Account creation failed");
-            errorResponse.put("detail", "Account number in URL (" + accountNumber + ") does not match account number in request body (" + accountDetails.getAccountNumber() + ").");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-        }
-        
-        // Save the account details
+        // Extract and save account details
+        AccountDetails accountDetails = new AccountDetails();
         accountDetails.setAccountNumber(accountNumber);
-        AccountDetails savedAccount = accountDetailsRepository.save(accountDetails);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedAccount);
+        accountDetails.setAccountName((String) payload.get("accountName"));
+        accountDetails.setAccountType(AccountDetails.AccountType.valueOf((String) payload.get("accountType")));
+        accountDetails.setCurrency((String) payload.get("currency"));
+        accountDetails.setStatus((String) payload.get("status"));
+        accountDetails.setCreatedDate(OffsetDateTime.parse((String) payload.get("createdDate")));
+        accountDetailsRepository.save(accountDetails);
+
+        // Extract and save balance details
+        Map<String, Object> balanceDetailsMap = (Map<String, Object>) payload.get("balanceDetails");
+        if (balanceDetailsMap != null) {
+            BalanceDetails balanceDetails = new BalanceDetails();
+            balanceDetails.setAccountNumber(accountNumber);
+            balanceDetails.setCurrentBalance(new BigDecimal(balanceDetailsMap.get("currentBalance").toString()));
+            balanceDetails.setAvailableBalance(new BigDecimal(balanceDetailsMap.get("availableBalance").toString()));
+            balanceDetails.setLastTransactionDate(OffsetDateTime.parse((String) balanceDetailsMap.get("lastTransactionDate")));
+            balanceDetailsRepository.save(balanceDetails);
+        }
+
+        // Extract and save address details
+        Map<String, Object> addressMap = (Map<String, Object>) payload.get("address");
+        Map<String, Object> contactDetailsMap = (Map<String, Object>) payload.get("contactDetails");
+        if (addressMap != null) {
+            Address address = new Address();
+            address.setAccountNumber(accountNumber);
+            address.setStreet((String) addressMap.get("street"));
+            address.setHouseNumber((String) addressMap.get("houseNumber"));
+            address.setCity((String) addressMap.get("city"));
+            address.setState((String) addressMap.get("state"));
+            address.setPostalCode((String) addressMap.get("postalCode"));
+            address.setCountry((String) addressMap.get("country"));
+            if (contactDetailsMap != null) {
+                address.setPhone((String) contactDetailsMap.get("phone"));
+                address.setEmail((String) contactDetailsMap.get("email"));
+            }
+            addressRepository.save(address);
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED).body("Account, Balance, and Address created successfully.");
     }
     @PutMapping("/{accountNumber}")
     public ResponseEntity<?> updateAccountDetails(@PathVariable Integer accountNumber, @Valid @RequestBody AccountDetails accountDetails) {
-        // Check 1: Account number in body must match account number in URL
-        if (accountDetails.getAccountNumber() == null) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("message", "Account update failed");
-            errorResponse.put("detail", "Account number must be provided in the request body.");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-        }
-        if (!accountNumber.equals(accountDetails.getAccountNumber())) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("message", "Account update failed");
-            errorResponse.put("detail", "Account number in URL (" + accountNumber + ") does not match account number in request body (" + accountDetails.getAccountNumber() + ").");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-        }
-
-        // Check 2: Account must exist to be updated
         if (!accountDetailsRepository.existsById(accountNumber)) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("message", "Account update failed");
-            errorResponse.put("detail", "Account with number " + accountNumber + " not found.");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found.");
         }
-        accountDetails.setAccountNumber(accountNumber);
-        AccountDetails updatedAccount = accountDetailsRepository.save(accountDetails);
-        return ResponseEntity.ok(updatedAccount);
-    }
-    @DeleteMapping("/{accountNumber}")
-    public ResponseEntity<Void> deleteAccountDetails(@PathVariable Integer accountNumber) {
-        if (!accountDetailsRepository.findById(accountNumber).isPresent()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-        accountDetailsRepository.deleteById(accountNumber);
-        return ResponseEntity.noContent().build();
-    }
 
-  
+        // Update account details
+        accountDetails.setAccountNumber(accountNumber);
+        accountDetailsRepository.save(accountDetails);
+
+        return ResponseEntity.ok("Account updated successfully.");
+    }
+    @Transactional
+    @DeleteMapping("/{accountNumber}")
+    public ResponseEntity<?> deleteAccountDetails(@PathVariable Integer accountNumber) {
+        if (!accountDetailsRepository.existsById(accountNumber)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found.");
+        }
+
+        // Delete account details
+        accountDetailsRepository.deleteById(accountNumber);
+
+        // Delete balance details
+        balanceDetailsRepository.deleteByAccountNumber(accountNumber);
+
+        // Delete address details
+        addressRepository.deleteByAccountNumber(accountNumber);
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Account, Balance, and Address deleted successfully.");
+    }
 }

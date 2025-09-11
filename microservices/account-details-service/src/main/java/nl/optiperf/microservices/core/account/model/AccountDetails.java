@@ -1,4 +1,5 @@
 package nl.optiperf.microservices.core.account.model;
+
 import java.time.OffsetDateTime;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.NotEmpty;
@@ -7,30 +8,30 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
 import java.util.Objects;
-// import jakarta.persistence.GeneratedValue; // If you want DB to generate ID
-// import jakarta.persistence.GenerationType; // If you want DB to generate ID
 
 @Entity
+
 public class AccountDetails {
     @Id
-    // @GeneratedValue(strategy = GenerationType.IDENTITY) // Uncomment if you want the DB to generate the ID
     @NotNull(message = "Account number cannot be null.")
-    private Integer accountNumber; // Assuming accountNumber is the ID
+    private Integer accountNumber;
+
     @NotNull(message = "Account name cannot be null.")
     @NotEmpty(message = "Account name cannot be empty.")
     private String accountName;
 
     @Enumerated(EnumType.STRING)
     @NotNull(message = "Account type cannot be null.")
-    private AccountType accountType; // Assuming AccountType is an enum
+    private AccountType accountType;
 
     @NotNull(message = "Currency cannot be null.")
     @NotEmpty(message = "Currency cannot be empty.")
     private String currency;
+
     @NotNull(message = "Status cannot be null.")
     @NotEmpty(message = "Status cannot be empty.")
     private String status;
-    
+
     @NotNull(message = "Created date cannot be null.")
     private OffsetDateTime createdDate;
 
