@@ -1,10 +1,7 @@
 package nl.optiperf.microservices.core.balance;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.web.client.RestTemplate;
+//import org.checkerframework.checker.units.qual.min;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
@@ -27,16 +24,15 @@ import org.springframework.data.domain.Sort;
 public class AccountBalanceServiceController {
     
     private AccountBalanceRepository accountBalanceRepository;
-    private final String ACCOUNT_DETAILS_SERVICE_URL = "http://kong:8000/account-details/exists";
-    private RestTemplate restTemplate;
-
     @Autowired
-    public AccountBalanceServiceController(AccountBalanceRepository accountBalanceRepository, RestTemplate restTemplate) {
+    public AccountBalanceServiceController(AccountBalanceRepository accountBalanceRepository) {
         this.accountBalanceRepository = accountBalanceRepository;
-        this.restTemplate = restTemplate;
     }
     @GetMapping
     public ResponseEntity<List<AccountBalance>> getFilteredBalances(
+        @RequestParam(required = false) String status,
+        @RequestParam(required = false) String accountType,
+        @RequestParam(required = false) String currency,
         @RequestParam(required = false) Double minCurrentBalance,
         @RequestParam(required = false) Double maxCurrentBalance,
         @RequestParam(required = false) Double minAvailableBalance,
@@ -46,16 +42,18 @@ public class AccountBalanceServiceController {
         @RequestParam(defaultValue = "0") int offset,
         @RequestParam(defaultValue = "20") int limit
     ) {
-        Pageable pageable = PageRequest.of(offset / limit, limit, Sort.by("balanceDetails.lastTransactionDate").descending());
-
-        // Adjusted to use only the available fields
+        Pageable pageable = PageRequest.of(offset / limit, limit, Sort.by("lastTransactionDate").descending());
+        // Provide null/default values for missing parameters to match the method signature
         List<AccountBalance> results = accountBalanceRepository.findFiltered(
-            minCurrentBalance,
-            maxCurrentBalance,
-            minAvailableBalance,
-            maxAvailableBalance,
-            createdAfter,
-            createdBefore,
+            status, 
+            accountType, 
+            currency, // third String parameter
+            minCurrentBalance, // Double parameter 1
+            maxAvailableBalance, // Double parameter 2
+            maxAvailableBalance, // Double parameter 3
+            minAvailableBalance, // Double parameter 4
+            createdAfter, 
+            createdBefore, 
             pageable
         );
         return ResponseEntity.ok(results);
@@ -67,7 +65,7 @@ public class AccountBalanceServiceController {
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-  /*  @GetMapping("/{accountNumber}/limited-details")
+    @GetMapping("/{accountNumber}/limited-details")
     public ResponseEntity<?> getLimitedAccountBalanceDetails(@PathVariable Integer accountNumber) {
         return accountBalanceRepository.findById(accountNumber)
                 .map(accountBalance -> {
@@ -83,24 +81,29 @@ public class AccountBalanceServiceController {
                 })
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
-*/
+
     @PostMapping("/{accountNumber}")
-    public ResponseEntity<?> createAccountBalance(
-            @PathVariable Integer accountNumber,
-            @RequestBody BalanceDetails balanceDetails) {
-
-        // Validate and process the request
-        AccountBalance accountBalance = new AccountBalance();
+    public ResponseEntity<?> createAccountBalance(@PathVariable Integer accountNumber, @RequestBody AccountBalance accountBalance) {
+        if (accountBalanceRepository.existsById(accountNumber)) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", "Balance creation failed");
+            errorResponse.put("detail", "Account with number " + accountNumber + " already exists. Try updating instead.");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+        }
+        if (!accountNumber.equals(accountBalance.getAccountNumber())) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", "Balance creation failed");
+            errorResponse.put("detail", "Account number in URL (" + accountNumber + ") does not match account number in request body (" + accountBalance.getAccountNumber() + ").");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+        
         accountBalance.setAccountNumber(accountNumber);
-        accountBalance.setBalanceDetails(balanceDetails);
-
-        // Save the balance record
         AccountBalance createdAccountBalance = accountBalanceRepository.save(accountBalance);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdAccountBalance);
     }
 
     @PutMapping("/{accountNumber}")
-    public ResponseEntity<?> updateAccountBalance(@PathVariable Integer accountNumber, @Valid @RequestBody BalanceDetails updateDetails) {
+    public ResponseEntity<?> updateAccountBalance(@PathVariable Integer accountNumber, @Valid @RequestBody UpdateBalanceRequestDTO updateDetails) {
         // Fetch the existing account balance entity
         Optional<AccountBalance> existingAccountOptional = accountBalanceRepository.findById(accountNumber);
 
@@ -110,15 +113,25 @@ public class AccountBalanceServiceController {
             errorResponse.put("detail", "Account with number " + accountNumber + " not found.");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
         }
-
         AccountBalance existingAccount = existingAccountOptional.get();
-        existingAccount.setBalanceDetails(updateDetails);
+        BalanceDetails existingBalanceDetails = existingAccount.getBalance();
 
-        // Save the updated entity
+        // Check if the currency in the request matches the existing currency
+        if (!existingBalanceDetails.getCurrency().equals(updateDetails.getCurrency())) {
+             Map<String, Object> errorResponse = new HashMap<>();
+             errorResponse.put("message", "Balance update failed");
+             errorResponse.put("detail", "Currency mismatch. Cannot change currency from '" + existingBalanceDetails.getCurrency() + "' to '" + updateDetails.getCurrency() + "'.");
+             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+
+        // Update only the current and available balance fields
+        existingBalanceDetails.setCurrentBalance(updateDetails.getCurrentBalance());
+        existingBalanceDetails.setAvailableBalance(updateDetails.getAvailableBalance());
+
+        // Save the updated entity. Other fields (name, type, status, lastTransactionDate) remain unchanged.
         accountBalanceRepository.save(existingAccount);
         Map<String, String> successResponse = new HashMap<>();
         successResponse.put("message", "Balance updated successfully for account number " + accountNumber);
         return ResponseEntity.ok(successResponse);
     }
 }
-
