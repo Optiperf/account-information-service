@@ -5,7 +5,6 @@ import org.springframework.stereotype.Repository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.*;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
@@ -17,41 +16,30 @@ public class AccountBalanceCustomRepositoryImpl implements AccountBalanceCustomR
     private EntityManager entityManager;
 
     @Override
-    public List<AccountBalance> findFiltered(
-            String status,
-            String accountType,
-            String currency,
-            Double minCurrentBalance,
-            Double maxCurrentBalance,
-            Double minAvailableBalance,
-            Double maxAvailableBalance,
-            OffsetDateTime lastTransactionAfter,
-            OffsetDateTime lastTransactionBefore,
-            Pageable pageable) {
-
+    public List<AccountBalance> findFiltered(Double minCurrentBalance, Double maxCurrentBalance,
+                                             Double minAvailableBalance, Double maxAvailableBalance,
+                                             Pageable pageable) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<AccountBalance> query = cb.createQuery(AccountBalance.class);
         Root<AccountBalance> root = query.from(AccountBalance.class);
 
         List<Predicate> predicates = new ArrayList<>();
 
-        // Top-level fields
-        if (status != null && !status.isEmpty()) predicates.add(cb.equal(root.get("status"), status));
-        if (accountType != null && !accountType.isEmpty()) predicates.add(cb.equal(root.get("accountType"), accountType));
-
-        // Embedded balance fields
-        Path<Object> balancePath = root.get("balance");
-
-        if (currency != null && !currency.isEmpty()) predicates.add(cb.equal(balancePath.get("currency"), currency));
-        if (minCurrentBalance != null) predicates.add(cb.greaterThanOrEqualTo(balancePath.get("currentBalance"), minCurrentBalance));
-        if (maxCurrentBalance != null) predicates.add(cb.lessThanOrEqualTo(balancePath.get("currentBalance"), maxCurrentBalance));
-        if (minAvailableBalance != null) predicates.add(cb.greaterThanOrEqualTo(balancePath.get("availableBalance"), minAvailableBalance));
-        if (maxAvailableBalance != null) predicates.add(cb.lessThanOrEqualTo(balancePath.get("availableBalance"), maxAvailableBalance));
-        if (lastTransactionAfter != null) predicates.add(cb.greaterThanOrEqualTo(balancePath.get("lastTransactionDate"), lastTransactionAfter));
-        if (lastTransactionBefore != null) predicates.add(cb.lessThanOrEqualTo(balancePath.get("lastTransactionDate"), lastTransactionBefore));
+        if (minCurrentBalance != null) {
+            predicates.add(cb.greaterThanOrEqualTo(root.get("balanceDetails").get("currentBalance"), minCurrentBalance));
+        }
+        if (maxCurrentBalance != null) {
+            predicates.add(cb.lessThanOrEqualTo(root.get("balanceDetails").get("currentBalance"), maxCurrentBalance));
+        }
+        if (minAvailableBalance != null) {
+            predicates.add(cb.greaterThanOrEqualTo(root.get("balanceDetails").get("availableBalance"), minAvailableBalance));
+        }
+        if (maxAvailableBalance != null) {
+            predicates.add(cb.lessThanOrEqualTo(root.get("balanceDetails").get("availableBalance"), maxAvailableBalance));
+        }
 
         query.where(predicates.toArray(new Predicate[0]));
-        query.orderBy(cb.desc(balancePath.get("lastTransactionDate")));
+        query.orderBy(cb.desc(root.get("balanceDetails").get("lastTransactionDate")));
 
         return entityManager.createQuery(query)
                 .setFirstResult((int) pageable.getOffset())
