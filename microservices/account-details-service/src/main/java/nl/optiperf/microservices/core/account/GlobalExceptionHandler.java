@@ -1,13 +1,14 @@
 package nl.optiperf.microservices.core.account;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.codec.DecodingException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.bind.support.WebExchangeBindException; // For WebFlux validation
 import org.springframework.web.server.ServerWebInputException;     // For WebFlux input errors (e.g., malformed JSON)
 import jakarta.validation.ConstraintViolationException;
@@ -117,4 +118,37 @@ public class GlobalExceptionHandler {
     responseBody.put("errors", errors);
     return responseBody;
 }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> handleResponseStatusException(ResponseStatusException ex) {
+        log.warn("Handling ResponseStatusException: Status Code: {}, Reason: '{}'", ex.getStatusCode(), ex.getReason(), ex);
+        Map<String, Object> body = new HashMap<>();
+
+        String generalMessage;
+        HttpStatus status = (HttpStatus) ex.getStatusCode(); // Correctly cast HttpStatusCode to HttpStatus
+
+        if (status == HttpStatus.NOT_FOUND) {
+            generalMessage = "Resource Not Found";
+        } else if (status == HttpStatus.CONFLICT) {
+            generalMessage = "Conflict";
+        } else if (status == HttpStatus.BAD_REQUEST) {
+            generalMessage = "Bad Request";
+        } else if (status.is4xxClientError()) {
+            generalMessage = "Client Error";
+        } else if (status.is5xxServerError()) {
+            generalMessage = "Server Error";
+        } else {
+            generalMessage = "Operation Failed";
+        }
+
+        body.put("message", generalMessage);
+        if (ex.getReason() != null) {
+            body.put("detail", ex.getReason()); // This will include your custom message
+        }
+        body.put("status", status.value());
+        // body.put("timestamp", java.time.LocalDateTime.now().toString()); // Optional: add timestamp
+
+        return new ResponseEntity<>(body, status);
+    }
 }

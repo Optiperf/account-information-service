@@ -29,7 +29,7 @@ public class AccountAddressServiceController {
         return accountAddressRepository.findById(accountNumber)
                 .map(ResponseEntity::ok)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Address not found for account number: " + accountNumber));
+                        "Address record not found for account number: " + accountNumber));
     }
 
     @PostMapping("/{accountNumber}")

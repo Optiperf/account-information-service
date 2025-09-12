@@ -19,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import java.math.BigDecimal;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/account-details")
@@ -54,19 +55,18 @@ public class AccountDetailsServiceController {
     }
 
     @GetMapping("/{accountNumber}")
-    public ResponseEntity<AccountDetails> getAccountDetails(@PathVariable Integer accountNumber) {
+    public ResponseEntity<?> getAccountDetails(@PathVariable Integer accountNumber) {
         return accountDetailsRepository.findById(accountNumber)
                 .map(accountDetails -> ResponseEntity.ok(accountDetails))
-                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Account record not found for account number: " + accountNumber));
     }
     @PostMapping("/{accountNumber}")
     @Transactional
     public ResponseEntity<?> createAccountDetails(@PathVariable Integer accountNumber, @RequestBody Map<String, Object> payload) {
         if (accountDetailsRepository.existsById(accountNumber)) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("message", "Account creation failed");
-            errorResponse.put("detail", "Account with number " + accountNumber + " already exists.");
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Account creation failed: Account with number " + accountNumber + " already exists.");
         }
 
         // Extract and save account details
@@ -111,10 +111,12 @@ public class AccountDetailsServiceController {
 
         return ResponseEntity.status(HttpStatus.CREATED).body("Account, Balance, and Address created successfully.");
     }
+
     @PutMapping("/{accountNumber}")
     public ResponseEntity<?> updateAccountDetails(@PathVariable Integer accountNumber, @Valid @RequestBody AccountDetails accountDetails) {
         if (!accountDetailsRepository.existsById(accountNumber)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found.");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "Account update failed: Account with number " + accountNumber + " not found.");
         }
 
         // Update account details
@@ -123,11 +125,13 @@ public class AccountDetailsServiceController {
 
         return ResponseEntity.ok("Account updated successfully.");
     }
+
     @Transactional
     @DeleteMapping("/{accountNumber}")
     public ResponseEntity<?> deleteAccountDetails(@PathVariable Integer accountNumber) {
         if (!accountDetailsRepository.existsById(accountNumber)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found.");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "Account deletion failed: Account with number " + accountNumber + " not found.");
         }
 
         // Delete account details
@@ -139,6 +143,6 @@ public class AccountDetailsServiceController {
         // Delete address details
         addressRepository.deleteByAccountNumber(accountNumber);
 
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Account, Balance, and Address deleted successfully.");
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

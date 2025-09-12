@@ -1,6 +1,7 @@
 package nl.optiperf.microservices.core.account.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.Objects;
@@ -14,14 +15,36 @@ public class Address {
     @Column(name = "account_number")
     private Integer accountNumber;
 
+    @NotNull(message = "Street cannot be null.")
+    @NotEmpty(message = "Street cannot be empty.")
     private String street;
+
+    @NotNull(message = "House number cannot be null.")
+    @NotEmpty(message = "House number cannot be empty.")
     private String houseNumber;
+
+    @NotNull(message = "City cannot be null.")
+    @NotEmpty(message = "City cannot be empty.")
     private String city;
+
+    @NotNull(message = "State cannot be null.")
+    @NotEmpty(message = "State cannot be empty.")
     private String state;
+
+    @NotNull(message = "Postal code cannot be null.")
+    @NotEmpty(message = "Postal code cannot be empty.")
     private String postalCode;
+
+    @NotNull(message = "Country cannot be null.")
+    @NotEmpty(message = "Country cannot be empty.")
     private String country;
 
+    @NotNull(message = "Phone cannot be null.")
+    @NotEmpty(message = "Phone cannot be empty.")
     private String phone;
+
+    @NotNull(message = "Email cannot be null.")
+    @NotEmpty(message = "Email cannot be empty.")
     private String email;
 
     // Getters and Setters

@@ -1,13 +1,17 @@
 package nl.optiperf.microservices.core.account.model;
 
 import jakarta.persistence.Embeddable;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.Objects;
 
 @Embeddable
 public class ContactDetails {
-
+    @NotNull(message = "Phone number cannot be null.")
     private String phone;
+
+    @Email(message = "Invalid email format.")
     private String email;
 
     // Getters and Setters

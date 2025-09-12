@@ -1,6 +1,7 @@
 package nl.optiperf.microservices.core.account.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
@@ -16,8 +17,15 @@ public class BalanceDetails {
     @Column(name = "account_number")
     private Integer accountNumber;
 
+    @NotNull(message = "currentBalance cannot be null.")
+    @DecimalMin(value = "0.00", message = "currentBalance must be greater than or equal to 0.00.")
     private BigDecimal currentBalance;
+
+    @NotNull(message = "availableBalance cannot be null.")
+    @DecimalMin(value = "0.00", message = "availableBalance must be greater than or equal to 0.00.")
     private BigDecimal availableBalance;
+
+    @NotNull(message = "lastTransactionDate cannot be null.")
     private OffsetDateTime lastTransactionDate;
 
     // Getters and Setters
